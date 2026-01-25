@@ -44,6 +44,8 @@ export default function Page() {
     setSubmitted(values);
   }
 
+  console.log("First file: ", form.getValues("images")[0]);
+
   return (
     <main className="bg-background min-h-screen p-8">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -83,6 +85,13 @@ export default function Page() {
                           onChange={field.onChange}
                           maxFiles={10}
                           maxSize={10 * 1024 * 1024}
+                          defaultUrls={[
+                            "https://plus.unsplash.com/premium_photo-1669828434908-c71eb9dad5e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                            "https://images.unsplash.com/photo-1768728186759-d5dd600612eb?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                            "https://plus.unsplash.com/premium_photo-1768053968250-c1ea4a302653?q=80&w=1152&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                            "https://images11.unsplash.com/photo-1761839256840-7780a45b85dc?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                          ]}
+                          disabled={form.formState.isSubmitting}
                         />
                       </FormControl>
                       <FormDescription>
