@@ -1,0 +1,149 @@
+import type * as React from 'react'
+import { flexRender, type Table as TanstackTable } from '@tanstack/react-table'
+import { Loader2 } from 'lucide-react'
+import { getCommonPinningStyles } from '@/lib/data-table'
+import { cn } from '@/lib/utils'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { DataTableColumnFilter } from '@/components/data-table/data-table-column-filter'
+import { DataTablePagination } from '@/components/data-table/data-table-pagination'
+
+interface DataTableProps<TData> extends React.ComponentProps<'div'> {
+  table: TanstackTable<TData>
+  actionBar?: React.ReactNode
+  onRowClick?: (row: TData) => void
+  isDataLoading?: boolean
+  enableAdvancedColumnsFilter?: boolean
+}
+
+export function DataTable<TData>({
+  table,
+  actionBar,
+  children,
+  className,
+  onRowClick,
+  isDataLoading,
+  enableAdvancedColumnsFilter = false,
+  ...props
+}: DataTableProps<TData>) {
+  return (
+    <div
+      className={cn('flex w-full flex-col gap-2.5 overflow-auto', className)}
+      {...props}
+    >
+      {children}
+      <div className='overflow-hidden rounded-md border'>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className='hover:bg-background'>
+                {headerGroup.headers.map((header) => {
+                  const shouldRenderColumnFilter = (
+                    column: typeof header.column
+                  ) =>
+                    enableAdvancedColumnsFilter &&
+                    (column.getCanFilter() || column.columnDef.meta?.variant)
+
+                  return (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      style={{
+                        ...getCommonPinningStyles({ column: header.column }),
+                      }}
+                      className={cn(
+                        'my-1 space-y-1 align-top',
+                        header.id === 'select' && 'align-middle'
+                      )}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+
+                      {shouldRenderColumnFilter(header.column) && (
+                        <div className='mb-1'>
+                          <DataTableColumnFilter
+                            column={header.column}
+                            table={table}
+                            isDataLoading={isDataLoading}
+                          />
+                        </div>
+                      )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody className='[&_tr:nth-child(odd)]:bg-muted/20'>
+            {isDataLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className='h-24'
+                >
+                  <div className='flex items-center justify-center'>
+                    <Loader2 className='animate-spin' size={32} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        ...getCommonPinningStyles({ column: cell.column }),
+                        minWidth: `${cell.column.columnDef.minSize}px`,
+                      }}
+                      onClick={() =>
+                        cell.id.includes('actions') ||
+                        cell.id.includes('select')
+                          ? undefined
+                          : onRowClick?.(row.original)
+                      }
+                      className={cn(onRowClick && 'cursor-pointer')}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className='h-24 text-center'
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className='flex flex-col gap-2.5'>
+        <DataTablePagination table={table} isDataLoading={isDataLoading} />
+        {actionBar &&
+          table.getFilteredSelectedRowModel().rows.length > 0 &&
+          actionBar}
+      </div>
+    </div>
+  )
+}

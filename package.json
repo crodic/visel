@@ -1,0 +1,26 @@
+{
+    "name": "framework",
+    "version": "1.0.0",
+    "description": "crodic framework",
+    "keywords": [
+        "framework",
+        "nestjs",
+        "nextjs",
+        "react",
+        "vite",
+        "shadcn"
+    ],
+    "homepage": "https://github.com/crodic/crodic-framework#readme",
+    "bugs": {
+        "url": "https://github.com/crodic/crodic-framework/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/crodic/crodic-framework.git"
+    },
+    "license": "MIT",
+    "author": "crodic",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    }
+}
