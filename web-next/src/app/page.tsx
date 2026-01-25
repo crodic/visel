@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -22,9 +22,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import SortableFormImageUpload from "@/components/form/sortable-form";
+import CoverUpload from "@/components/form/cover-upload-field";
 
 const formSchema = z.object({
   images: z.array(z.instanceof(File)).min(1, "At least one image is required"),
+  cover: z.instanceof(File).nullish(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,7 +46,11 @@ export default function Page() {
     setSubmitted(values);
   }
 
-  console.log("First file: ", form.getValues("images")[0]);
+  const images = form.watch("images");
+
+  useEffect(() => {
+    console.log("First file:", images[0]);
+  }, [images]);
 
   return (
     <main className="bg-background min-h-screen p-8">
@@ -89,7 +95,7 @@ export default function Page() {
                             "https://plus.unsplash.com/premium_photo-1669828434908-c71eb9dad5e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                             "https://images.unsplash.com/photo-1768728186759-d5dd600612eb?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                             "https://plus.unsplash.com/premium_photo-1768053968250-c1ea4a302653?q=80&w=1152&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            "https://images11.unsplash.com/photo-1761839256840-7780a45b85dc?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                            "https://images.unsplash.com/photo-1761839256840-7780a45b85dc?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                           ]}
                           disabled={form.formState.isSubmitting}
                         />
@@ -97,6 +103,32 @@ export default function Page() {
                       <FormDescription>
                         Upload multiple images and drag to reorder them. The
                         order will be saved when you submit.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cover"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cover Image</FormLabel>
+                      <FormControl>
+                        <CoverUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          // disabled={field.disabled}
+                          // name={field.name}
+                          defaultUri="https://plus.unsplash.com/premium_photo-1669828434908-c71eb9dad5e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                          maxSize={5 * 1024 * 1024}
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Upload a cover image for your post. Max 5MB, supports
+                        JPG, PNG, WebP.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
