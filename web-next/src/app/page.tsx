@@ -1,19 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import {
   Card,
   CardContent,
@@ -21,166 +10,230 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import SortableFormImageUpload from "@/components/form/sortable-form";
-import CoverUpload from "@/components/form/cover-upload-field";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { ImagePayload } from "@/components/form/types";
+import SortableImageUpload from "@/components/form/file-upload-sortable";
 
-const formSchema = z.object({
-  images: z.array(z.instanceof(File)).min(1, "At least one image is required"),
-  cover: z.instanceof(File).nullish(),
-});
+// Example existing images from server
+const EXISTING_IMAGES = [
+  {
+    id: "existing-1",
+    src: "https://picsum.photos/400/300?random=1",
+    alt: "Product view 1",
+  },
+  {
+    id: "existing-2",
+    src: "https://picsum.photos/400/300?random=2",
+    alt: "Product view 2",
+  },
+  {
+    id: "existing-3",
+    src: "https://picsum.photos/400/300?random=3",
+    alt: "Product view 3",
+  },
+];
 
-type FormValues = z.infer<typeof formSchema>;
+interface FormData {
+  images: ImagePayload[];
+}
 
 export default function Page() {
-  const [submitted, setSubmitted] = useState<FormValues | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [lastSubmitted, setLastSubmitted] = useState<ImagePayload[] | null>(
+    null
+  );
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormData>({
     defaultValues: {
-      images: [],
+      // Initialize with existing images in order
+      images: EXISTING_IMAGES.map((img, index) => ({
+        type: "existing" as const,
+        id: img.id,
+        order: index,
+      })),
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Form submitted with images:", values);
-    setSubmitted(values);
-  }
+  const onSubmit = (data: FormData) => {
+    console.log("[v0] Form submitted with ImagePayload[]:", data.images);
 
-  const images = form.watch("images");
+    // Example: Process the payload
+    const result = processImagePayload(data.images);
+    console.log("[v0] Processed result:", result);
 
-  useEffect(() => {
-    console.log("First file:", images[0]);
-  }, [images]);
+    setLastSubmitted(data.images);
+    setSubmitted(true);
+
+    // Reset after 3 seconds
+    // setTimeout(() => setSubmitted(false), 3000);
+  };
 
   return (
-    <main className="bg-background min-h-screen p-8">
+    <div className="bg-background min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-8">
-        {/* Header */}
-        <div className="space-y-2">
+        <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Image Upload Form
+            Image Upload with Form Integration
           </h1>
-          <p className="text-muted-foreground">
-            Upload and organize your images with drag-and-drop reordering
+          <p className="text-muted-foreground mt-2">
+            Demonstrates proper state separation: UI state vs form/submit state
+            using react-hook-form.
           </p>
         </div>
 
-        {/* Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Images</CardTitle>
-            <CardDescription>
-              Upload images and organize them by dragging to reorder
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="images"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Images</FormLabel>
-                      <FormControl>
-                        <SortableFormImageUpload
-                          value={field.value}
-                          onChange={field.onChange}
-                          maxFiles={10}
-                          maxSize={10 * 1024 * 1024}
-                          defaultUrls={[
-                            "https://plus.unsplash.com/premium_photo-1669828434908-c71eb9dad5e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            "https://images.unsplash.com/photo-1768728186759-d5dd600612eb?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            "https://plus.unsplash.com/premium_photo-1768053968250-c1ea4a302653?q=80&w=1152&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            "https://images.unsplash.com/photo-1761839256840-7780a45b85dc?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                          ]}
-                          disabled={form.formState.isSubmitting}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Upload multiple images and drag to reorder them. The
-                        order will be saved when you submit.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Image Upload Field */}
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Images</FormLabel>
+                  <FormDescription>
+                    Upload and reorder images. Existing images can be deleted,
+                    and new ones can be added.
+                  </FormDescription>
+                  <FormControl>
+                    <SortableImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      existingImages={EXISTING_IMAGES}
+                      maxFiles={5}
+                      maxSize={10 * 1024 * 1024}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-                <FormField
-                  control={form.control}
-                  name="cover"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cover Image</FormLabel>
-                      <FormControl>
-                        <CoverUpload
-                          value={field.value}
-                          onChange={field.onChange}
-                          // disabled={field.disabled}
-                          // name={field.name}
-                          defaultUri="https://plus.unsplash.com/premium_photo-1669828434908-c71eb9dad5e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                          maxSize={5 * 1024 * 1024}
-                          accept="image/jpeg,image/jpg,image/png,image/webp"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Upload a cover image for your post. Max 5MB, supports
-                        JPG, PNG, WebP.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Submitting..." : "Submit"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      form.reset();
-                      setSubmitted(null);
-                    }}
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+            <Button type="submit" size="lg">
+              Submit Images
+            </Button>
+          </form>
+        </Form>
 
         {/* Submission Result */}
-        {submitted && (
-          <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
+        {submitted && lastSubmitted && (
+          <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
             <CardHeader>
               <CardTitle className="text-green-900 dark:text-green-100">
-                Form Submitted Successfully!
+                Form Submitted Successfully
               </CardTitle>
+              <CardDescription className="text-green-800 dark:text-green-200">
+                Review the ImagePayload[] that would be sent to your server:
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>Files submitted ({submitted.images.length}):</strong>
-                </p>
-                <ul className="list-inside list-disc space-y-1 text-sm text-green-700 dark:text-green-300">
-                  {submitted.images.map((file, index) => (
-                    <li key={`${file.name}-${index}`}>
-                      {index + 1}. {file.name} (
-                      {(file.size / 1024 / 1024).toFixed(2)}MB)
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <pre className="border-border max-h-96 overflow-auto rounded-md border bg-white p-4 text-sm dark:bg-zinc-950">
+                {JSON.stringify(
+                  lastSubmitted,
+                  (key, value) => {
+                    // Don't stringify File objects
+                    if (value instanceof File) {
+                      return `[File: ${value.name}]`;
+                    }
+                    return value;
+                  },
+                  2
+                )}
+              </pre>
             </CardContent>
           </Card>
         )}
+
+        {/* Documentation Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Component Architecture</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div>
+              <h3 className="mb-2 font-semibold">State Separation</h3>
+              <ul className="text-muted-foreground list-inside list-disc space-y-1">
+                <li>
+                  <strong>UI State:</strong> Tracked uploads with
+                  progress/status, drag reordering
+                </li>
+                <li>
+                  <strong>Form State:</strong> ImagePayload[] representing user
+                  intent (existing, new, deleted)
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-semibold">ImagePayload Types</h3>
+              <ul className="text-muted-foreground list-inside list-disc space-y-1">
+                <li>
+                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
+                    existing
+                  </code>
+                  : Keep existing image in new order
+                </li>
+                <li>
+                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
+                    new
+                  </code>
+                  : Add newly uploaded file
+                </li>
+                <li>
+                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
+                    deleted
+                  </code>
+                  : Remove existing image
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-semibold">Key Features</h3>
+              <ul className="text-muted-foreground list-inside list-disc space-y-1">
+                <li>Drag and drop reordering with automatic order updates</li>
+                <li>Upload progress tracking (UI only)</li>
+                <li>Mixed display of existing and new images</li>
+                <li>Explicit deletion tracking for existing images</li>
+                <li>No server inference—payload is explicit and clear</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </main>
+    </div>
   );
+}
+
+/**
+ * Example function showing how to process ImagePayload[] on the server.
+ * This would typically be in a Server Action or API route.
+ */
+function processImagePayload(payloads: ImagePayload[]) {
+  const result = {
+    toDelete: [] as string[],
+    toKeep: [] as { id: string; order: number }[],
+    toUpload: [] as { tempId: string; fileName: string; order: number }[],
+  };
+
+  payloads.forEach((payload) => {
+    if (payload.type === "deleted") {
+      result.toDelete.push(payload.id);
+    } else if (payload.type === "existing") {
+      result.toKeep.push({ id: payload.id, order: payload.order });
+    } else if (payload.type === "new") {
+      result.toUpload.push({
+        tempId: payload.tempId,
+        fileName: payload.file.name,
+        order: payload.order,
+      });
+    }
+  });
+
+  return result;
 }
