@@ -99,6 +99,51 @@ export default function SortableImageUpload({
       )
       .sort((a, b) => a.order - b.order);
 
+    // Check if value only contains existing images (reset scenario)
+    const hasOnlyExistingPayloads = activePayloads.every(
+      (p) => p.type === "existing"
+    );
+    const newPayloadsInValue = activePayloads.filter((p) => p.type === "new");
+
+    // Clear upload progress and file refs for items no longer in value
+    if (hasOnlyExistingPayloads && activePayloads.length > 0) {
+      // Form was reset - clear all new image state
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.clear();
+      fileMapRef.current.clear();
+      setUploadProgress(new Map());
+      setErrors([]);
+    } else {
+      // Clean up any orphaned entries not in new value
+      const newTempIds = new Set(newPayloadsInValue.map((p) => p.tempId));
+
+      // Remove orphaned preview URLs
+      for (const [tempId, url] of previewUrlsRef.current.entries()) {
+        if (!newTempIds.has(tempId)) {
+          URL.revokeObjectURL(url);
+          previewUrlsRef.current.delete(tempId);
+        }
+      }
+
+      // Remove orphaned file refs
+      for (const tempId of fileMapRef.current.keys()) {
+        if (!newTempIds.has(tempId)) {
+          fileMapRef.current.delete(tempId);
+        }
+      }
+
+      // Remove orphaned upload progress entries
+      setUploadProgress((prev) => {
+        const updated = new Map(prev);
+        for (const tempId of updated.keys()) {
+          if (!newTempIds.has(tempId)) {
+            updated.delete(tempId);
+          }
+        }
+        return updated;
+      });
+    }
+
     // If we have payloads with order, use that order
     if (activePayloads.length > 0) {
       for (const payload of activePayloads) {

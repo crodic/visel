@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import SortableImageUpload from "@/components/form/file-upload-sortable";
+import type { ExistingImage, ImagePayload } from "@/components/form/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,43 +21,86 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { ImagePayload } from "@/components/form/types";
-import SortableImageUpload from "@/components/form/file-upload-sortable";
 
-// Example existing images from server
-const EXISTING_IMAGES = [
+// Simulated existing images from server (edit flow)
+const mockExistingImages: ExistingImage[] = [
   {
-    id: "existing-1",
+    id: "server-1",
     src: "https://picsum.photos/400/300?random=1",
     alt: "Product view 1",
   },
   {
-    id: "existing-2",
+    id: "server-2",
     src: "https://picsum.photos/400/300?random=2",
     alt: "Product view 2",
   },
   {
-    id: "existing-3",
+    id: "server-3",
     src: "https://picsum.photos/400/300?random=3",
     alt: "Product view 3",
   },
 ];
 
-interface FormData {
-  images: ImagePayload[];
-}
+// Zod schema for ImagePayload validation
+const existingImageSchema = z.object({
+  type: z.literal("existing"),
+  id: z.string(),
+  order: z.number(),
+});
 
-export default function Page() {
-  const [submitted, setSubmitted] = useState(false);
-  const [lastSubmitted, setLastSubmitted] = useState<ImagePayload[] | null>(
+const newImageSchema = z.object({
+  type: z.literal("new"),
+  file: z.instanceof(File, { message: "Must be a valid File" }),
+  tempId: z.string(),
+  order: z.number(),
+});
+
+const deletedImageSchema = z.object({
+  type: z.literal("deleted"),
+  id: z.string(),
+});
+
+const imagePayloadSchema = z.discriminatedUnion("type", [
+  existingImageSchema,
+  newImageSchema,
+  deletedImageSchema,
+]);
+
+// Custom validation: count only active images (existing + new, excluding deleted)
+const imagesSchema = z
+  .array(imagePayloadSchema)
+  .refine(
+    (images) => {
+      const activeImages = images.filter((img) => img.type !== "deleted");
+      return activeImages.length >= 1;
+    },
+    { message: "At least 1 image is required" }
+  )
+  .refine(
+    (images) => {
+      const activeImages = images.filter((img) => img.type !== "deleted");
+      return activeImages.length <= 200;
+    },
+    { message: "Maximum 200 images allowed" }
+  );
+
+const formSchema = z.object({
+  images: imagesSchema,
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export default function ImageUploadDemo() {
+  const [submittedData, setSubmittedData] = useState<ImagePayload[] | null>(
     null
   );
 
   const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      // Initialize with existing images in order
-      images: EXISTING_IMAGES.map((img, index) => ({
+      images: mockExistingImages.map((img, index) => ({
         type: "existing" as const,
         id: img.id,
         order: index,
@@ -61,179 +108,149 @@ export default function Page() {
     },
   });
 
+  const currentValue = form.watch("images");
+
   const onSubmit = (data: FormData) => {
-    console.log("[v0] Form submitted with ImagePayload[]:", data.images);
+    setSubmittedData(data.images);
+  };
 
-    // Example: Process the payload
-    const result = processImagePayload(data.images);
-    console.log("[v0] Processed result:", result);
-
-    setLastSubmitted(data.images);
-    setSubmitted(true);
-
-    // Reset after 3 seconds
-    // setTimeout(() => setSubmitted(false), 3000);
+  const handleReset = () => {
+    form.reset({
+      images: mockExistingImages.map((img, index) => ({
+        type: "existing" as const,
+        id: img.id,
+        order: index,
+      })),
+    });
+    setSubmittedData(null);
   };
 
   return (
-    <div className="bg-background min-h-screen p-6">
+    <main className="container mx-auto px-4 py-10">
       <div className="mx-auto max-w-4xl space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Image Upload with Form Integration
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold">
+            Image Upload with React Hook Form
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Demonstrates proper state separation: UI state vs form/submit state
-            using react-hook-form.
+          <p className="text-muted-foreground">
+            Edit flow: reorder, add, and delete images with proper form state
+            management
           </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Image Upload Field */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="images"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Images</FormLabel>
-                  <FormDescription>
-                    Upload and reorder images. Existing images can be deleted,
-                    and new ones can be added.
-                  </FormDescription>
                   <FormControl>
                     <SortableImageUpload
+                      existingImages={mockExistingImages}
                       value={field.value}
                       onChange={field.onChange}
-                      existingImages={EXISTING_IMAGES}
-                      maxFiles={5}
-                      maxSize={10 * 1024 * 1024}
+                      maxFiles={200}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Upload between 1 and 200 images. Drag to reorder.
+                  </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" size="lg">
-              Submit Images
-            </Button>
+            <div className="flex justify-center gap-4">
+              <Button type="submit" size="lg">
+                Save Changes
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={handleReset}
+              >
+                Reset
+              </Button>
+            </div>
           </form>
         </Form>
 
-        {/* Submission Result */}
-        {submitted && lastSubmitted && (
-          <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+        {/* Debug: Show current form value */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Current Form Value</CardTitle>
+            <CardDescription>
+              Real-time view of the ImagePayload[] being tracked by
+              react-hook-form
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted max-h-64 overflow-auto rounded-lg p-4 text-xs">
+              {JSON.stringify(
+                currentValue?.map((p) => {
+                  if (p.type === "new") {
+                    return { ...p, file: `[File: ${p.file.name}]` };
+                  }
+                  return p;
+                }),
+                null,
+                2
+              )}
+            </pre>
+          </CardContent>
+        </Card>
+
+        {/* Show submitted data */}
+        {submittedData && (
+          <Card className="border-green-500/50">
             <CardHeader>
-              <CardTitle className="text-green-900 dark:text-green-100">
-                Form Submitted Successfully
+              <CardTitle className="text-green-600">
+                Submitted Payload
               </CardTitle>
-              <CardDescription className="text-green-800 dark:text-green-200">
-                Review the ImagePayload[] that would be sent to your server:
+              <CardDescription>
+                This is what would be sent to your server
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="border-border max-h-96 overflow-auto rounded-md border bg-white p-4 text-sm dark:bg-zinc-950">
+              <pre className="bg-muted max-h-64 overflow-auto rounded-lg p-4 text-xs">
                 {JSON.stringify(
-                  lastSubmitted,
-                  (key, value) => {
-                    // Don't stringify File objects
-                    if (value instanceof File) {
-                      return `[File: ${value.name}]`;
+                  submittedData.map((p) => {
+                    if (p.type === "new") {
+                      return { ...p, file: `[File: ${p.file.name}]` };
                     }
-                    return value;
-                  },
+                    return p;
+                  }),
+                  null,
                   2
                 )}
               </pre>
+
+              <div className="mt-4 space-y-2 text-sm">
+                <p>
+                  <strong>Summary:</strong>
+                </p>
+                <ul className="text-muted-foreground list-inside list-disc space-y-1">
+                  <li>
+                    Existing images to keep:{" "}
+                    {submittedData.filter((p) => p.type === "existing").length}
+                  </li>
+                  <li>
+                    New images to upload:{" "}
+                    {submittedData.filter((p) => p.type === "new").length}
+                  </li>
+                  <li>
+                    Images to delete:{" "}
+                    {submittedData.filter((p) => p.type === "deleted").length}
+                  </li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         )}
-
-        {/* Documentation Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Component Architecture</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div>
-              <h3 className="mb-2 font-semibold">State Separation</h3>
-              <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                <li>
-                  <strong>UI State:</strong> Tracked uploads with
-                  progress/status, drag reordering
-                </li>
-                <li>
-                  <strong>Form State:</strong> ImagePayload[] representing user
-                  intent (existing, new, deleted)
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="mb-2 font-semibold">ImagePayload Types</h3>
-              <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                <li>
-                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                    existing
-                  </code>
-                  : Keep existing image in new order
-                </li>
-                <li>
-                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                    new
-                  </code>
-                  : Add newly uploaded file
-                </li>
-                <li>
-                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                    deleted
-                  </code>
-                  : Remove existing image
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="mb-2 font-semibold">Key Features</h3>
-              <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                <li>Drag and drop reordering with automatic order updates</li>
-                <li>Upload progress tracking (UI only)</li>
-                <li>Mixed display of existing and new images</li>
-                <li>Explicit deletion tracking for existing images</li>
-                <li>No server inference—payload is explicit and clear</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+    </main>
   );
-}
-
-/**
- * Example function showing how to process ImagePayload[] on the server.
- * This would typically be in a Server Action or API route.
- */
-function processImagePayload(payloads: ImagePayload[]) {
-  const result = {
-    toDelete: [] as string[],
-    toKeep: [] as { id: string; order: number }[],
-    toUpload: [] as { tempId: string; fileName: string; order: number }[],
-  };
-
-  payloads.forEach((payload) => {
-    if (payload.type === "deleted") {
-      result.toDelete.push(payload.id);
-    } else if (payload.type === "existing") {
-      result.toKeep.push({ id: payload.id, order: payload.order });
-    } else if (payload.type === "new") {
-      result.toUpload.push({
-        tempId: payload.tempId,
-        fileName: payload.file.name,
-        order: payload.order,
-      });
-    }
-  });
-
-  return result;
 }
