@@ -9,6 +9,10 @@ import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
 import './ instrument'
 import Providers from './components/providers'
+import {
+  trackingSentryMutation,
+  trackingSentryQueries,
+} from './config/tanstack-query'
 import AppRouter from './routes/router'
 import './styles/index.css'
 
@@ -42,6 +46,8 @@ const queryClient = new QueryClient({
       },
     },
   },
+  queryCache: trackingSentryQueries(),
+  mutationCache: trackingSentryMutation(),
 })
 
 // Render the app

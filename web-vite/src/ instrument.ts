@@ -24,6 +24,7 @@ Sentry.init({
       createRoutesFromChildren,
       matchRoutes,
     }),
+    Sentry.zodErrorsIntegration(),
   ],
   // Enable logs to be sent to Sentry
   enableLogs: true,
