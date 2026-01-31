@@ -16,6 +16,7 @@ Sentry.init({
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
   environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || "local",
+  integrations: [Sentry.zodErrorsIntegration()],
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
