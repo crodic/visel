@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import SortableImageUpload from "@/components/form/file-upload-sortable";
+import SortableImageUpload from "@/components/form/sortable-image-upload";
 import type { ExistingImage, ImagePayload } from "@/components/form/types";
 import { Button } from "@/components/ui/button";
 import {

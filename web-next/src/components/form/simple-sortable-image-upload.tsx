@@ -39,7 +39,7 @@ interface ImageFile {
   error?: string;
 }
 
-interface SortableFormImageUploadProps {
+interface SimpleSortableImageUploadProps {
   // Form field props
   value?: File[]; // Array of File objects in order
   onChange?: (value: File[]) => void;
@@ -55,7 +55,7 @@ interface SortableFormImageUploadProps {
   onUploadComplete?: (images: ImageFile[]) => void;
 }
 
-export default function SortableFormImageUpload({
+export default function SimpleSortableImageUpload({
   value = [],
   onChange,
   disabled = false,
@@ -66,7 +66,7 @@ export default function SortableFormImageUpload({
   onImagesChange,
   onUploadComplete,
   defaultUrls = [],
-}: SortableFormImageUploadProps) {
+}: SimpleSortableImageUploadProps) {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
