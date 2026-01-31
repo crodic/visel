@@ -835,7 +835,7 @@
       "description": "Interactive Storybook stories demonstrating sortable image upload component usage and props",
       "categories": ["ui", "storybook", "file", "form"],
       "author": "Crodic Crystal <alice01422@gmail.com>",
-      "registryDependencies": [],
+      "registryDependencies": ["sonner"],
       "files": [
         {
           "path": "registry/ui/sortable-image-upload-story/sortable-image-upload.stories.tsx",
@@ -856,6 +856,33 @@
         {
           "path": "src/components/reui/progress.tsx",
           "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "cover-upload-story",
+      "type": "registry:component",
+      "title": "Cover Image Upload Story",
+      "description": "Interactive Storybook stories demonstrating sortable image upload component usage and props",
+      "categories": ["ui", "storybook", "file", "form"],
+      "author": "Crodic Crystal <alice01422@gmail.com>",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ui/cover-upload-story/cover-upload.stories.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/reui/alert.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/reui/button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/hooks/use-file-upload.ts",
+          "type": "registry:hook"
         }
       ]
     },

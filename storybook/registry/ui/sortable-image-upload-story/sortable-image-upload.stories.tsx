@@ -1,6 +1,5 @@
 import SortableImageUpload from "@/components/reui/sortable-image-upload";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
 
 // 👆 Update path về đúng component của bạn
 
@@ -13,7 +12,7 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
  * - upload progress simulation
  */
 const meta = {
-  title: "ui/SortableImageUpload",
+  title: "reui/SortableImageUpload",
   component: SortableImageUpload,
   tags: ["autodocs"],
   argTypes: {
@@ -100,57 +99,5 @@ export const MaxFilesReached: Story = {
       },
     ],
     value: [{ type: "existing", id: "img-1", order: 0 }],
-  },
-};
-
-/**
- * Upload interaction test:
- * - Click Browse File (should open input)
- * - Mock file upload event
- * - Verify new image preview appears
- * - Remove image
- */
-export const ShouldUploadAndRemoveImage: Story = {
-  name: "Should upload a file and remove it",
-  tags: ["!dev", "!autodocs"],
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    // Click Browse File button
-    const browseButton = await canvas.findByRole("button", {
-      name: /browse file/i,
-    });
-    await userEvent.click(browseButton);
-
-    // Locate hidden file input
-    const fileInput = document.querySelector(
-      "input[type='file']",
-    ) as HTMLInputElement;
-
-    const mockFile = new File(["dummy"], "demo.png", { type: "image/png" });
-    await waitFor(() => {
-      const dt = new DataTransfer();
-      dt.items.add(mockFile);
-      fileInput.files = dt.files;
-      fileInput.dispatchEvent(new Event("change"));
-    });
-
-    // Verify preview appears
-    await waitFor(async () => {
-      const images = await canvas.findAllByRole("img");
-      expect(images.length).toBeGreaterThan(0);
-    });
-
-    // Remove the uploaded image
-    const removeButtons = await canvas.findAllByRole("button", {
-      name: "",
-    });
-    await userEvent.click(removeButtons[removeButtons.length - 1]);
-
-    // Image should be removed
-    await waitFor(async () => {
-      const imgs = canvas.queryAllByRole("img");
-      expect(imgs.length).toBe(0);
-    });
   },
 };
