@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client'
 import { AxiosError } from 'axios'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@/i18n'
+import * as Sentry from '@sentry/react'
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v7'
 import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
+import './ instrument'
 import Providers from './components/providers'
 import AppRouter from './routes/router'
 import './styles/index.css'
@@ -45,7 +47,17 @@ const queryClient = new QueryClient({
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
+  const root = ReactDOM.createRoot(rootElement, {
+    // Callback called when an error is thrown and not caught by an ErrorBoundary.
+    onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
+      // eslint-disable-next-line no-console
+      console.warn('Uncaught error', error, errorInfo.componentStack)
+    }),
+    // Callback called when React catches an error in an ErrorBoundary.
+    onCaughtError: Sentry.reactErrorHandler(),
+    // Callback called when React automatically recovers from errors.
+    onRecoverableError: Sentry.reactErrorHandler(),
+  })
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>

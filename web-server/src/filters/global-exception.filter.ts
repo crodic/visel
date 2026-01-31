@@ -16,6 +16,7 @@ import {
   ValidationError,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { STATUS_CODES } from 'http';
 import { I18nContext } from 'nestjs-i18n';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
@@ -28,6 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   constructor(private readonly configService: ConfigService<AllConfigType>) {}
 
+  @SentryExceptionCaptured()
   catch(exception: any, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();

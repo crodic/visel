@@ -18,6 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { redisStore } from 'cache-manager-ioredis-yet';
 import {
   AcceptLanguageResolver,
@@ -139,11 +140,14 @@ function generateModulesSet() {
     inject: [ConfigService],
   });
 
+  const sentryModule = SentryModule.forRoot();
+
   const modulesSet = process.env.MODULES_SET || 'monolith';
 
   switch (modulesSet) {
     case 'monolith':
       customModules = [
+        sentryModule,
         dbModule,
         cacheModule,
         bullModule,

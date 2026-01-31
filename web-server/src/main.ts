@@ -16,6 +16,7 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { type AllConfigType } from './config/config.type';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
+import './instrument';
 import setupSwagger from './utils/setup-swagger';
 
 async function bootstrap() {

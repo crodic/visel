@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -332,7 +333,10 @@ const routes: RouteObject[] = [
   },
 ]
 
-const router = createBrowserRouter(routes)
+const sentryCreateBrowserRouter =
+  Sentry.wrapCreateBrowserRouterV7(createBrowserRouter)
+
+const router = sentryCreateBrowserRouter(routes)
 
 const AppRouter = () => {
   return <RouterProvider router={router} />

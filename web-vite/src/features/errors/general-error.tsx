@@ -1,3 +1,5 @@
+import React from 'react'
+import * as Sentry from '@sentry/react'
 import { useNavigate, useRouteError } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -25,6 +27,11 @@ export function GeneralError({
     .join(':')
 
   const navigate = useNavigate()
+
+  React.useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
+
   return (
     <div className={cn('h-svh w-full', className)}>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
