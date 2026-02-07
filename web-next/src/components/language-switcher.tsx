@@ -12,6 +12,12 @@ import { routing } from "@/i18n/routing";
 import { Locale, useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useTransition } from "react";
+import { US, VN } from "country-flag-icons/react/3x2";
+
+const flags: Record<Locale, typeof US> = {
+  en: US,
+  vi: VN,
+};
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
@@ -43,12 +49,17 @@ export default function LanguageSwitcher() {
       <SelectTrigger className="w-full max-w-48">
         <SelectValue placeholder="Select a language" />
       </SelectTrigger>
-      <SelectContent>
-        {routing.locales.map((cur) => (
-          <SelectItem value={cur} key={cur}>
-            {t(cur as "en" | "vi")}
-          </SelectItem>
-        ))}
+      <SelectContent position="popper" align="start">
+        {routing.locales.map((cur) => {
+          const Flag = flags[cur as "en" | "vi"];
+
+          return (
+            <SelectItem value={cur} key={cur}>
+              <Flag title={cur} className="size-4" />
+              {t(cur as "en" | "vi")}
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );

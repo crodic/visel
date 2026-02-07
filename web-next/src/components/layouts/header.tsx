@@ -1,11 +1,11 @@
 "use client";
 import { useScroll } from "@/hooks/use-scroll";
-import { Logo } from "@/components/layouts/logo";
 
 import { cn } from "@/lib/utils";
 import { DesktopNav } from "@/components/layouts/desktop-nav";
 import { MobileNav } from "@/components/layouts/mobile-nav";
 import UserAccount from "../user-account";
+import LanguageSwitcher from "../language-switcher";
 
 export function Header() {
   const scrolled = useScroll(10);
@@ -19,12 +19,15 @@ export function Header() {
     >
       <nav className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-5">
-          <a className="hover:bg-accent rounded-md px-3 py-2.5" href="#">
-            <Logo className="h-4" />
+          <a className="rounded-md px-3 py-2.5" href="/">
+            <span className="text-primary dancing-script-font text-2xl font-bold">
+              Visel Art
+            </span>
           </a>
           <DesktopNav />
         </div>
         <div className="hidden items-center gap-2 md:flex">
+          <LanguageSwitcher />
           {/* <Button variant="outline">Sign In</Button>
           <Button>Get Started</Button> */}
           <UserAccount />

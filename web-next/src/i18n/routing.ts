@@ -37,5 +37,10 @@ export const routing = defineRouting({
           // 200 days
           maxAge: 200 * 24 * 60 * 60,
         },
-  pathnames: {},
+  // pathnames: {
+  //   "/": "/",
+  //   "/search": "/search",
+  //   "/artworks": "/artworks",
+  //   "/artworks/[id]": "/artworks/[id]",
+  // },
 });

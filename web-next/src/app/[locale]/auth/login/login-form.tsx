@@ -66,8 +66,8 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <Card className="w-125">
+    <div className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
+      <Card className="w-100">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
