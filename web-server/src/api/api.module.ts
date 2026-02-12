@@ -28,7 +28,7 @@ import { UserModule } from './user/user.module';
         return [
           {
             rootPath: join(__dirname, '..', '..', uploadRoot),
-            serveRoot: '/uploads',
+            serveRoot: `/${uploadRoot}`,
           },
         ];
       },
