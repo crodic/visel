@@ -16,7 +16,7 @@ function setupSwagger(app: INestApplication) {
       'https://crodic.id.vn',
       'alice01422@gmail.com',
     )
-    .addBearerAuth()
+    .addBearerAuth({ type: 'http', name: 'Bearer' }, 'Bearer')
     // .addApiKey({ type: 'apiKey', name: 'Api-Key', in: 'header' }, 'Api-Key')
     .addServer(
       configService.getOrThrow('app.url', { infer: true }),
@@ -25,6 +25,14 @@ function setupSwagger(app: INestApplication) {
     .addServer('https://example.com', 'Staging')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+
+  const removePrefixes = ['/nestlens', '/__nestlens__/', '/api/__nestlens__/'];
+
+  for (const path of Object.keys(document.paths)) {
+    if (removePrefixes.some((prefix) => path.startsWith(prefix))) {
+      delete document.paths[path];
+    }
+  }
 
   SwaggerModule.setup('api-docs', app, document, {
     customSiteTitle: appName,
