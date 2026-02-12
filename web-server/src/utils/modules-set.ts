@@ -157,6 +157,7 @@ function generateModulesSet() {
     inject: [ConfigService],
   });
 
+  // Sentry Module
   const sentryModule = SentryModule.forRoot();
 
   const modulesSet = process.env.MODULES_SET || 'monolith';
@@ -176,31 +177,6 @@ function generateModulesSet() {
         MailModule,
         MailWatcherModule,
         ApiModule,
-      ];
-      break;
-    case 'api':
-      customModules = [
-        LibsModule,
-        ApiModule,
-        bullModule,
-        cacheModule,
-        dbModule,
-        i18nModule,
-        loggerModule,
-        MailModule,
-        bullBoardModule,
-      ];
-      break;
-    case 'background':
-      customModules = [
-        LibsModule,
-        bullModule,
-        BackgroundModule,
-        cacheModule,
-        dbModule,
-        i18nModule,
-        loggerModule,
-        bullBoardModule,
       ];
       break;
     default:
