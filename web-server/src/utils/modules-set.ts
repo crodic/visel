@@ -20,6 +20,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { redisStore } from 'cache-manager-ioredis-yet';
+import expressBasicAuth from 'express-basic-auth';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -76,9 +77,25 @@ function generateModulesSet() {
   });
 
   // Background Jobs Dashboard
-  const bullBoardModule = BullBoardModule.forRoot({
-    route: '/queues',
-    adapter: ExpressAdapter,
+  const bullBoardModule = BullBoardModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService<AllConfigType>) => {
+      return {
+        route: configService.getOrThrow('app.bullBoardPath', { infer: true }),
+        adapter: ExpressAdapter,
+        middleware: expressBasicAuth({
+          users: {
+            [configService.getOrThrow('auth.bullBoardUsername', {
+              infer: true,
+            })]: configService.getOrThrow('auth.bullBoardPassword', {
+              infer: true,
+            }),
+          },
+          challenge: true,
+        }),
+      };
+    },
   });
 
   // Localization Module

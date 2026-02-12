@@ -18,4 +18,10 @@ export class AdminUserRegisterReqDto {
 
   @StringFieldOptional()
   username?: string;
+
+  @StringField()
+  first_name!: string;
+
+  @StringField()
+  last_name!: string;
 }

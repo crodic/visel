@@ -1,4 +1,3 @@
-import { PostEntity } from '@/api/post/entities/post.entity';
 import { ID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { hashPassword as hashPass } from '@/utils/password.util';
@@ -9,9 +8,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
-  OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
 
 @Entity('users')
@@ -65,9 +62,6 @@ export class UserEntity extends AbstractEntity {
     default: null,
   })
   deletedAt: Date;
-
-  @OneToMany(() => PostEntity, (post) => post.user)
-  posts: Relation<PostEntity[]>;
 
   @Column({ type: 'timestamptz', name: 'verified_at', nullable: true })
   verifiedAt?: Date;

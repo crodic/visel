@@ -11,7 +11,6 @@ import { UploadModule } from './file-upload/upload.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
 import { NotificationModule } from './notification/notification.module';
-import { PostModule } from './post/post.module';
 import { RoleModule } from './role/role.module';
 import { SettingsModule } from './settings/settings.module';
 import { UserModule } from './user/user.module';
@@ -34,10 +33,6 @@ import { UserModule } from './user/user.module';
         ];
       },
     }),
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, '..', '..', 'uploads'),
-    //   serveRoot: '/uploads',
-    // }),
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
@@ -46,11 +41,9 @@ import { UserModule } from './user/user.module';
     HealthModule,
     AuthModule,
     HomeModule,
-    PostModule,
     AuditLogModule,
     RoleModule,
     AdminUserModule,
-    // FileUploadModule,
     UploadModule,
     NotificationModule,
     SettingsModule,

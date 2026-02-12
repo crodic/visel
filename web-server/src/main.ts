@@ -10,6 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
+import basicAuth from 'express-basic-auth';
 import helmet from 'helmet';
 import { updateGlobalConfig } from 'nestjs-paginate';
 import { Logger } from 'nestjs-pino';
@@ -24,7 +25,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
-  // Use Pino Loger
+  // Use Pino Logger
   app.useLogger(app.get(Logger));
   // app.useLogger(app.get(NestLensLogger));
   // For high-traffic websites in production, it is strongly recommended to offload compression from the application server - typically in a reverse proxy (e.g., Nginx). In that case, you should not use compression middleware.
@@ -38,6 +39,18 @@ async function bootstrap() {
   const corsOrigin = configService.getOrThrow('app.corsOrigin', {
     infer: true,
   });
+
+  app.use(
+    ['/api-docs', '/api-docs-json'],
+    basicAuth({
+      users: {
+        [configService.getOrThrow('auth.swaggerUsername', { infer: true })]:
+          configService.getOrThrow('auth.swaggerPassword', { infer: true }),
+      },
+      challenge: true,
+      unauthorizedResponse: 'Unauthorized',
+    }),
+  );
 
   app.enableCors({
     origin: corsOrigin,
