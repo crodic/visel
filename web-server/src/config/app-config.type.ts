@@ -12,4 +12,5 @@ export type AppConfig = {
   secureHeaderOrigin: string;
   allowedImages: string[];
   uploadFolder: string;
+  bullBoardPath: string;
 };

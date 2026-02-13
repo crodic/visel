@@ -136,13 +136,18 @@ export class AdminAuthService {
       throw new ValidationException(ErrorCode.E003);
     }
 
-    const user = await this.adminUserRepository.save({
+    const user = this.adminUserRepository.create({
+      firstName: dto.first_name,
+      lastName: dto.last_name,
       email: dto.email,
       password: dto.password,
       roleId: dto.roleId,
+      username: dto.username,
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });
+
+    await this.adminUserRepository.save(user);
 
     const token = await this.createVerificationToken({ id: user.id });
     const tokenExpiresIn = this.configService.getOrThrow(

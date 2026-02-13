@@ -1,10 +1,12 @@
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import 'dotenv/config';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-export const AVATAR_PATH = 'uploads/avatars';
+const UPLOAD_ROOT = process.env.UPLOAD_FOLDER || 'uploads';
+export const AVATAR_PATH = `${UPLOAD_ROOT}/avatars`;
 
 export const avatarUploadOption: MulterOptions = {
   limits: { fileSize: 5 * 1024 * 1024 },

@@ -79,6 +79,10 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   UPLOAD_FOLDER: string;
+
+  @IsString()
+  @IsOptional()
+  BULL_BOARD_PATH: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -108,6 +112,7 @@ export default registerAs<AppConfig>('app', () => {
       ? process.env.ALLOWED_IMAGES.split(',')
       : ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
     uploadFolder: process.env.UPLOAD_FOLDER || 'uploads',
+    bullBoardPath: process.env.BULL_BOARD_PATH || '/queues',
   };
 });
 
