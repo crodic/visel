@@ -1,18 +1,21 @@
 import {
-  ComponentPropsWithoutRef,
-  ElementRef,
+  type ComponentPropsWithoutRef,
+  type ElementRef,
   forwardRef,
   useCallback,
-  useMemo
+  useMemo,
 } from 'react'
 import { useFormContext } from 'react-hook-form'
 import {
-  MultiValue,
-  OnChangeValue,
-  PropsValue,
-  SingleValue
+  type MultiValue,
+  type OnChangeValue,
+  type PropsValue,
+  type SingleValue,
 } from 'react-select'
-import AutoCompleteSelect, { Option, OptionValue } from './auto-complete-select'
+import AutoCompleteSelect, {
+  type Option,
+  type OptionValue,
+} from './auto-complete-select'
 
 type IsMulti = boolean
 type AutoCompleteSelectControlForwardRef = Omit<
